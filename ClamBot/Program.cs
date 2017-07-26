@@ -3,6 +3,8 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace ClamBot
@@ -27,6 +29,9 @@ namespace ClamBot
 
         public async Task MainAsync()
         {
+            // Stupid .NET Core design choices
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
+
             _client = new DiscordSocketClient();
 
             _client.Log += Log;
@@ -78,14 +83,14 @@ namespace ClamBot
         }
 
         private void GetRandomClam(SocketMessage msg)
-        {
+        {            
             Console.WriteLine("Getting files in the folder...");
-            List<string> clamPics = Directory.EnumerateFiles("./clams/") as List<string>;
+            List<string> clamPics = Directory.EnumerateFiles("./clams").ToList();
             Console.WriteLine("wow gottem");
 
             int index = rand.Next(0, clamPics.Count);
 
-            msg.Channel.SendFileAsync(clamPics[index]?.ToString(), $"Debug test: image {index}");
+            msg.Channel.SendFileAsync(clamPics[index].ToString(), $"Debug test: image {index}");
 
             return;
         }
