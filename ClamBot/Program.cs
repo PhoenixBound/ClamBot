@@ -1,7 +1,7 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -10,6 +10,7 @@ namespace ClamBot
     public class Program
     {
         private DiscordSocketClient _client;
+        private static Random rand = new Random();
 
         public static void Main(string[] args)
         {
@@ -49,7 +50,7 @@ namespace ClamBot
         {
             string fileToken;
 
-            using (StreamReader sr = new StreamReader(File.OpenRead("ClientDetails.txt")))
+            using (StreamReader sr = new StreamReader(File.OpenRead("./ClientDetails.txt")))
             {
                 fileToken = await sr.ReadLineAsync();
             }
@@ -59,26 +60,34 @@ namespace ClamBot
 
         private async Task MessageReceived(SocketMessage message)
         {
-            if (message.Content == "!ping")
+            if (message.Content == "!ping" || message.Content.StartsWith("!ping "))
             {
                 await message.Channel.SendMessageAsync("clam");
                 await Task.Delay(1000);
                 await message.Channel.SendMessageAsync("i mean pong");
             }
-            else if (message.Content == "!clam")
+            else if (message.Content == "!clam" || message.Content.StartsWith("!clam "))
             {
-                await GetRandomClam(message);
+                GetRandomClam(message);
             }
-            else if (message.Content == "!guppy")
+            else if (message.Content == "!guppy" || message.Content.StartsWith("!guppy"))
             {
                 await message.Channel.SendMessageAsync("fine, i'll go to bed");
                 throw new Exception("Going to bed");
             }
         }
 
-        private async Task GetRandomClam(SocketMessage msg)
+        private void GetRandomClam(SocketMessage msg)
         {
-            await msg.Channel.SendMessageAsync("what, you want me to google a random clam or something? pfft. searching costs money, kiddo...");
+            Console.WriteLine("Getting files in the folder...");
+            List<string> clamPics = Directory.EnumerateFiles("./clams/") as List<string>;
+            Console.WriteLine("wow gottem");
+
+            int index = rand.Next(0, clamPics.Count);
+
+            msg.Channel.SendFileAsync(clamPics[index]?.ToString(), $"Debug test: image {index}");
+
+            return;
         }
     }
 }
