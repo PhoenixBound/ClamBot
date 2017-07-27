@@ -37,6 +37,7 @@ namespace ClamBot
 
             _client.Log += Log;
             _client.MessageReceived += MessageReceived;
+            _client.Ready += ReadyMsg;
 
             string token = await ReadToken();
 
@@ -50,6 +51,11 @@ namespace ClamBot
         {
             Console.WriteLine(msg.ToString());
             return Task.CompletedTask;
+        }
+
+        private async Task ReadyMsg()
+        {
+            await _client.GetGuild(282433337514000385).GetTextChannel(339906131227050004).SendMessageAsync("you called? 'cause i respond :wink:");
         }
 
         private async Task<string> ReadToken()
@@ -76,16 +82,22 @@ namespace ClamBot
             {
                 await GetRandomClam(message);
             }
-            else if (message.Content == "!guppy" || message.Content.StartsWith("!guppy"))
+            else if (message.Content == "!guppy" || message.Content.StartsWith("!guppy "))
             {
-                await message.Channel.SendMessageAsync("fine, i'll go to bed");
-                throw new Exception("Going to bed");
+                // Only Lars Bars#8111 can shut down the bot. (I'll add myself for debug purposes too.)
+                if (message.Author.Id == 143536806141362177 || message.Author.Id == 138440233866756096)
+                {
+                    // ...But it doesn't even shut down! That's the joke.
+                    await message.Channel.SendMessageAsync("fine, i'll go to bed");
+                    await Task.Delay(60000);
+                }
             }
         }
 
         private async Task Ping(SocketMessage msg)
         {
-            if (rand.Next() % 16 == 0)
+            // 1/16 or so chance of this being false.
+            if (rand.Next() % 16 != 0)
             {
                 await msg.Channel.SendMessageAsync("pong");
             }
@@ -104,6 +116,13 @@ namespace ClamBot
 
             int index = rand.Next(0, clamPics.Count);
 
+            // Image 0 is rarer than the rest because of this.
+            if (index == 0)
+            {
+                index = rand.Next(0, clamPics.Count);
+            }
+
+            await msg.Channel.TriggerTypingAsync();
             await msg.Channel.SendFileAsync(clamPics[index].ToString());
         }
     }
