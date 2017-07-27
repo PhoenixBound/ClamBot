@@ -123,7 +123,7 @@ namespace ClamBot
             }
 
             await msg.Channel.TriggerTypingAsync();
-            await msg.Channel.SendFileAsync(clamPics[index].ToString());
+            await msg.Channel.SendFileAsync(clamPics[index].ToString(), $"You randomed image {index}!");
         }
     }
 }
