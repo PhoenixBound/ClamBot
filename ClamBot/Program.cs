@@ -23,6 +23,7 @@ namespace ClamBot
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.ReadLine();
                 return;
             }
         }
@@ -53,27 +54,27 @@ namespace ClamBot
 
         private async Task<string> ReadToken()
         {
-            string fileToken;
-
             using (StreamReader sr = new StreamReader(File.OpenRead("./ClientDetails.txt")))
             {
-                fileToken = await sr.ReadLineAsync();
+                return await sr.ReadLineAsync();
             }
-
-            return fileToken;
         }
 
         private async Task MessageReceived(SocketMessage message)
         {
+            // This bot only works in #clams on Lars & Friends.
+            if (message.Channel.Id != 339906131227050004)
+            {
+                return;
+            }
+
             if (message.Content == "!ping" || message.Content.StartsWith("!ping "))
             {
-                await message.Channel.SendMessageAsync("clam");
-                await Task.Delay(1000);
-                await message.Channel.SendMessageAsync("i mean pong");
+                await Ping(message);
             }
             else if (message.Content == "!clam" || message.Content.StartsWith("!clam "))
             {
-                GetRandomClam(message);
+                await GetRandomClam(message);
             }
             else if (message.Content == "!guppy" || message.Content.StartsWith("!guppy"))
             {
@@ -82,17 +83,28 @@ namespace ClamBot
             }
         }
 
-        private void GetRandomClam(SocketMessage msg)
+        private async Task Ping(SocketMessage msg)
+        {
+            if (rand.Next() % 16 == 0)
+            {
+                await msg.Channel.SendMessageAsync("pong");
+            }
+            else
+            {
+                await msg.Channel.SendMessageAsync("clam");
+                await Task.Delay(500);
+                await msg.Channel.SendMessageAsync("er");
+                await msg.Channel.SendMessageAsync("pong");
+            }
+        }
+
+        private async Task GetRandomClam(SocketMessage msg)
         {            
-            Console.WriteLine("Getting files in the folder...");
             List<string> clamPics = Directory.EnumerateFiles("./clams").ToList();
-            Console.WriteLine("wow gottem");
 
             int index = rand.Next(0, clamPics.Count);
 
-            msg.Channel.SendFileAsync(clamPics[index].ToString(), $"Debug test: image {index}");
-
-            return;
+            await msg.Channel.SendFileAsync(clamPics[index].ToString());
         }
     }
 }
